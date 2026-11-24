@@ -23,6 +23,18 @@ async function list(f) {
     where.push(sql.replace('?', `$${params.length}`));
   };
 
+  // Every whitespace-separated term must match at least one searchable column.
+  if (f.q) {
+    for (const term of f.q.split(/\s+/).filter(Boolean).slice(0, 6)) {
+      const like = `%${term.replace(/[\\%_]/g, '\\$&')}%`;
+      params.push(like);
+      const n = `$${params.length}`;
+      where.push(
+        `(v.title ILIKE ${n} OR v.brand ILIKE ${n} OR v.model ILIKE ${n}` +
+        ` OR v.city ILIKE ${n} OR v.description ILIKE ${n} OR v.year::text ILIKE ${n})`
+      );
+    }
+  }
   if (f.brand) add('lower(v.brand) = lower(?)', f.brand);
   if (f.model) add('lower(v.model) = lower(?)', f.model);
   if (f.city) add('lower(v.city) = lower(?)', f.city);

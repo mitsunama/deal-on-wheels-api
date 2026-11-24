@@ -47,6 +47,8 @@ const updateVehicle = vehicleBase
   .refine((o) => Object.keys(o).length > 0, 'Nothing to update');
 
 const listVehiclesQuery = z.object({
+  // free-text search over title, brand, model, city and description
+  q: z.string().trim().max(100).optional(),
   brand: z.string().optional(),
   model: z.string().optional(),
   city: z.string().optional(),
