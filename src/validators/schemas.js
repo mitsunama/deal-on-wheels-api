@@ -24,7 +24,11 @@ const updateProfile = z
   .partial()
   .refine((o) => Object.keys(o).length > 0, 'Nothing to update');
 
+// under_4 = fewer than 4 wheels (motorcycle, scooter, trike); four_plus = 4 wheels or more
+const vehicleType = z.enum(['under_4', 'four_plus']);
+
 const vehicleBase = z.object({
+  vehicleType,
   title: z.string().trim().min(3).max(150),
   brand: z.string().trim().min(1).max(60),
   model: z.string().trim().min(1).max(60),
@@ -39,7 +43,7 @@ const vehicleBase = z.object({
 });
 
 const createVehicle = vehicleBase.partial({
-  mileageKm: true, transmission: true, fuelType: true, city: true, description: true, specs: true,
+  vehicleType: true, mileageKm: true, transmission: true, fuelType: true, city: true, description: true, specs: true,
 });
 
 const updateVehicle = vehicleBase
@@ -49,6 +53,7 @@ const updateVehicle = vehicleBase
 const listVehiclesQuery = z.object({
   // free-text search over title, brand, model, city and description
   q: z.string().trim().max(100).optional(),
+  vehicleType: vehicleType.optional(),
   brand: z.string().optional(),
   model: z.string().optional(),
   city: z.string().optional(),

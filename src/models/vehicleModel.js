@@ -3,7 +3,7 @@ const HttpError = require('../utils/HttpError');
 
 // API field -> DB column (whitelist for dynamic UPDATE)
 const COLUMNS = {
-  title: 'title', brand: 'brand', model: 'model', year: 'year',
+  vehicleType: 'vehicle_type', title: 'title', brand: 'brand', model: 'model', year: 'year',
   mileageKm: 'mileage_km', transmission: 'transmission', fuelType: 'fuel_type',
   city: 'city', price: 'price', description: 'description', specs: 'specs',
 };
@@ -35,6 +35,7 @@ async function list(f) {
       );
     }
   }
+  if (f.vehicleType) add('v.vehicle_type = ?', f.vehicleType);
   if (f.brand) add('lower(v.brand) = lower(?)', f.brand);
   if (f.model) add('lower(v.model) = lower(?)', f.model);
   if (f.city) add('lower(v.city) = lower(?)', f.city);
@@ -45,7 +46,7 @@ async function list(f) {
 
   params.push(f.limit, (f.page - 1) * f.limit);
   const { rows } = await db.query(
-    `SELECT v.id, v.seller_id, v.title, v.brand, v.model, v.year, v.mileage_km,
+    `SELECT v.id, v.seller_id, v.vehicle_type, v.title, v.brand, v.model, v.year, v.mileage_km,
             v.city, v.price, v.status, v.created_at,
             (SELECT storage_path FROM vehicle_images i
               WHERE i.vehicle_id = v.id ORDER BY i.position, i.created_at LIMIT 1) AS cover_image,
@@ -77,12 +78,12 @@ async function findById(id) {
 async function create(sellerId, d) {
   const { rows } = await db.query(
     `INSERT INTO vehicles
-       (seller_id, title, brand, model, year, mileage_km, transmission, fuel_type, city, price, description, specs)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,COALESCE($12::jsonb, '{}'::jsonb))
+       (seller_id, title, brand, model, year, mileage_km, transmission, fuel_type, city, price, description, specs, vehicle_type)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,COALESCE($12::jsonb, '{}'::jsonb), COALESCE($13, 'four_plus'))
      RETURNING *`,
     [sellerId, d.title, d.brand, d.model, d.year, d.mileageKm ?? null, d.transmission ?? null,
      d.fuelType ?? null, d.city ?? null, d.price, d.description ?? null,
-     d.specs ? JSON.stringify(d.specs) : null]
+     d.specs ? JSON.stringify(d.specs) : null, d.vehicleType ?? null]
   );
   return rows[0];
 }
