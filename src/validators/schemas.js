@@ -93,7 +93,13 @@ const listTransactionsQuery = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
 
+const listWishlistQuery = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
 module.exports = {
+  listWishlistQuery,
   idParam, idAndImageParam, register, login, updateProfile,
   createVehicle, updateVehicle, listVehiclesQuery,
   createTransaction, listTransactionsQuery,
